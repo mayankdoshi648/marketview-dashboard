@@ -157,6 +157,22 @@ const LiveEngine = {
       map={};
       for(let i=1;i<lines.length;i++){ const c=lines[i].split(","); if(c[iN]==="EQUITY"&&(c[iG]==="NSE"||c[iG]==="BSE")) map[c[iS]]=+c[iI]; }
     }
+    if(!map || Object.keys(map).length<500){
+      /* proxy/CDN returned garbage (XML error/empty) — datacenter IPs are blocked; direct browser fetch (residential IP) usually works */
+      try{
+        const r2=await fetch("https://images.dhan.co/api_data/api-scrip-master.csv");
+        if(r2.ok){
+          const t2=await r2.text();
+          if(!t2.trim().startsWith("<?xml")){
+            const L=t2.split("\n"), H=L[0].split(",");
+            const a=H.indexOf("SEM_TRADING_SYMBOL"), b=H.indexOf("SECURITY_ID"), g=H.indexOf("SEM_EXM_EXCH_ID"), n=H.indexOf("SEM_INSTRUMENT_NAME");
+            map={};
+            for(let i=1;i<L.length;i++){ const c=L[i].split(","); if(c[n]==="EQUITY"&&(c[g]==="NSE"||c[g]==="BSE")) map[c[a]]=+c[b]; }
+          }
+        }
+      }catch(e){ console.warn("direct scrip fetch failed:",e.message); }
+    }
+    if(!map || Object.keys(map).length<500) throw new Error("scrip master unreachable (proxy blocked, direct failed)");
     this.cacheSet(ck,map);
     return map;
   },
