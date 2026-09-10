@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>India Market View — Trading Dashboard</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">₹</div>
+      <div>
+        <div class="sb-title">MarketView</div>
+        <div class="sb-sub">India · Dhan</div>
+      </div>
+    </div>
+
+    <nav id="sb-nav">
+      <button class="sb-item active" data-sec="overview"><span class="sb-ic">▦</span>Market Overview</button>
+      <button class="sb-item" data-sec="radar"><span class="sb-ic">◉</span>Institutional Radar</button>
+      <button class="sb-item" data-sec="breadth"><span class="sb-ic">◎</span>MA Breadth Gauge</button>
+      <button class="sb-item" data-sec="sectors"><span class="sb-ic">▩</span>Sector Matrix</button>
+      <button class="sb-item" data-sec="screener"><span class="sb-ic">≣</span>Universe Inspector</button>
+      <button class="sb-item" data-sec="patterns"><span class="sb-ic">⚡</span>Pattern Scanner</button>
+      <button class="sb-item" data-sec="data"><span class="sb-ic">⛓</span>Data Source</button>
+    </nav>
+
+    <div class="sb-foot">
+      <div id="conn-pill" class="conn-pill demo"><span class="dot"></span><span id="conn-label">Demo Data</span></div>
+      <button id="btn-settings" class="sb-ghost">⚙ Settings</button>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main id="main">
+
+    <header id="topbar">
+      <div class="tb-left">
+        <h1 id="page-title">Market Overview</h1>
+        <div id="tb-sub" class="tb-sub">Index pulse, EMA posture &amp; PCR / VIX read</div>
+      </div>
+      <div class="tb-right">
+        <span id="clock" class="chip"></span>
+        <button id="btn-refresh" class="btn primary">⟳ Refresh</button>
+        <button id="btn-connect" class="btn">⛓ Connect Dhan</button>
+      </div>
+    </header>
+
+    <!-- ========== SECTION: OVERVIEW ========== -->
+    <section id="sec-overview" class="sec active">
+      <div class="row space-between">
+        <div class="seg" id="universe-seg">
+          <button class="seg-btn active" data-u="50">Nifty 50</button>
+          <button class="seg-btn" data-u="500">Nifty 500</button>
+        </div>
+        <div class="hint">Green pill = price above that EMA · Red = below</div>
+      </div>
+      <div id="index-tiles" class="tile-grid"></div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-h">Advance / Decline <span class="muted" id="ad-sub"></span></div>
+          <canvas id="ch-ad" height="150"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-h">Index vs 20 EMA distance</div>
+          <canvas id="ch-ema-dist" height="150"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-h">VIX vs Nifty (30 sessions)</div>
+          <canvas id="ch-vix" height="150"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION: RADAR ========== -->
+    <section id="sec-radar" class="sec">
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-h">FII / DII Net Institutional Flow (₹ Cr, 10 sessions)</div>
+          <canvas id="ch-fii" height="180"></canvas>
+          <div id="fii-summary" class="kv"></div>
+        </div>
+        <div class="card">
+          <div class="card-h">Volatility Regime &amp; IV Flow</div>
+          <div id="vol-regime" class="regime"></div>
+          <canvas id="ch-iv" height="120"></canvas>
+          <div id="iv-summary" class="kv"></div>
+        </div>
+        <div class="card">
+          <div class="card-h">Nifty Option PCR &amp; Max Pain</div>
+          <div class="gauge-row">
+            <div class="mini-gauge"><canvas id="g-pcr" width="120" height="120"></canvas><div class="g-lab">PCR</div></div>
+            <div id="maxpain-box" class="mp-box"></div>
+          </div>
+          <div id="pcr-strip" class="pcr-strip"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h">Option Positioning Drill-down</div>
+        <div id="opt-table-wrap" class="tbl-wrap"></div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION: BREADTH ========== -->
+    <section id="sec-breadth" class="sec">
+      <div class="seg" id="tf-seg" style="margin-bottom:14px">
+        <button class="seg-btn active" data-tf="D">Daily</button>
+        <button class="seg-btn" data-tf="W">Weekly</button>
+        <button class="seg-btn" data-tf="M">Monthly</button>
+      </div>
+      <div id="breadth-gauges" class="gauge-grid"></div>
+      <div class="grid-2" style="margin-top:14px">
+        <div class="card">
+          <div class="card-h">Breadth History — <span id="breadth-hist-lab" class="muted">EMA-20 participation</span></div>
+          <div class="seg mini" id="breadth-ind-seg"></div>
+          <canvas id="ch-breadth-hist" height="200"></canvas>
+        </div>
+        <div class="card">
+          <div class="card-h">Breadth Indicator Legend</div>
+          <div id="breadth-legend" class="legend-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION: SECTORS ========== -->
+    <section id="sec-sectors" class="sec">
+      <div id="sector-tiles" class="tile-grid small"></div>
+      <div class="grid-2" style="margin-top:14px">
+        <div class="card">
+          <div class="card-h">Sectorial Heatmap — constituents</div>
+          <div class="seg mini" id="sector-heat-seg"></div>
+          <div id="heatmap" class="heatmap"></div>
+        </div>
+        <div class="card">
+          <div class="card-h">Sector Rotation Map <span class="muted">(RS momentum vs RS)</span></div>
+          <canvas id="ch-rotation" height="340"></canvas>
+          <div class="quad-legend">
+            <span><i class="q q1"></i>Leading</span><span><i class="q q2"></i>Weakening</span>
+            <span><i class="q q3"></i>Lagging</span><span><i class="q q4"></i>Improving</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-h">Sector Flow Details</div>
+        <div id="sector-flow-wrap" class="tbl-wrap"></div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION: SCREENER ========== -->
+    <section id="sec-screener" class="sec">
+      <div class="row space-between wrap">
+        <div class="seg" id="screener-universe-seg">
+          <button class="seg-btn active" data-u="50">Nifty 50</button>
+          <button class="seg-btn" data-u="500">Nifty 500</button>
+        </div>
+        <div class="row wrap">
+          <input id="q" class="input" placeholder="Search symbol / sector…" />
+          <select id="f-cap" class="input"><option value="">All Caps</option><option>Large</option><option>Mid</option><option>Small</option></select>
+          <select id="f-sector" class="input"><option value="">All Sectors</option></select>
+          <select id="f-sort" class="input">
+            <option value="chg1d">Sort: 1D %</option><option value="chg1w">Sort: 1W %</option>
+            <option value="chg1m">Sort: 1M %</option><option value="rsi">Sort: RSI</option>
+            <option value="volSpike">Sort: Vol Spike</option><option value="gapUp">Sort: Gap Up</option>
+          </select>
+          <button id="wl-only" class="btn">★ Watchlist</button>
+          <button id="export-csv" class="btn">⤓ CSV</button>
+        </div>
+      </div>
+      <div class="row wrap" style="margin:10px 0">
+        <label class="chk"><input type="checkbox" id="flt-ema-stack" /> EMA Stack ↑↑</label>
+        <label class="chk"><input type="checkbox" id="flt-bull-x" /> Bullish EMA cross (5d)</label>
+        <label class="chk"><input type="checkbox" id="flt-rsi-ma" /> RSI &gt; MA(RSI)</label>
+        <label class="chk"><input type="checkbox" id="flt-oversold" /> Oversold pullback</label>
+        <label class="chk"><input type="checkbox" id="flt-nearhigh" /> Within 15% of 52W high</label>
+      </div>
+      <div id="screener-table" class="tbl-wrap"></div>
+      <div class="muted" style="margin-top:8px" id="screener-count"></div>
+    </section>
+
+    <!-- ========== SECTION: PATTERNS ========== -->
+    <section id="sec-patterns" class="sec">
+      <div class="row wrap" id="pattern-tabs"></div>
+      <div id="pattern-summary" class="grid-4"></div>
+      <div class="card" style="margin-top:14px">
+        <div class="card-h" id="pattern-title">Qualified Setups</div>
+        <div id="pattern-table" class="tbl-wrap"></div>
+      </div>
+    </section>
+
+    <!-- ========== SECTION: DATA ========== -->
+    <section id="sec-data" class="sec">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-h">Dhan (DhanHQ) Connection</div>
+          <label class="fld">Client ID<input id="in-client" class="input" placeholder="e.g. 110234567" /></label>
+          <label class="fld">Access Token <span class="muted">(from api.dhan.co dashboard)</span><input id="in-token" class="input" type="password" placeholder="eyJ0eXAiOiJKV1Qi…" /></label>
+          <label class="fld">CORS / Relay proxy <span class="muted">(prefilled with a working public relay — replace with your own worker.js for daily use)</span><input id="in-proxy" class="input" placeholder="https://cors.eu.org/" /></label>
+            <label class="chk" style="margin:6px 0 10px"><input type="checkbox" id="in-prefer-dhan" /> Prefer Dhan for stock candles (1-time scrip-master download, falls back to NSE)</label>
+          <div class="row" style="margin-top:12px">
+            <button id="btn-dhan-test" class="btn primary">Test &amp; Save</button>
+            <button id="btn-dhan-clear" class="btn">Disconnect</button>
+          </div>
+          <div id="dhan-status" class="status-box"></div>
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            Dhan endpoints used: <code>/v2/fundlimit</code> (auth test), <code>/v2/charts/historical</code> (daily candles for EMA/RSI),
+            <code>/v2/optionchain</code> (NIFTY PCR / Max Pain). Token never leaves your browser.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-h">NSE Public Data (indices, FII/DII, sectors)</div>
+          <label class="fld">Proxy prefix for NSE <span class="muted">(NSE blocks ALL public proxies — deploy worker.js, or leave empty for Dhan-only mode)</span><input id="in-nse-proxy" class="input" placeholder="https://your-worker.workers.dev/?url=" /></label>
+          <div class="row" style="margin-top:12px">
+            <button id="btn-nse-save" class="btn primary">Save</button>
+            <button id="btn-nse-test" class="btn">Test NSE</button>
+          </div>
+          <div id="nse-status" class="status-box"></div>
+          <div class="card-h" style="margin-top:18px">Data Mode</div>
+          <div class="seg">
+            <button class="seg-btn" id="mode-live">Live (Dhan + NSE)</button>
+            <button class="seg-btn active" id="mode-demo">Demo (offline sample)</button>
+          </div>
+          <div class="muted" style="margin-top:10px;font-size:12px">
+            Demo mode generates a realistic synthetic Nifty 50 / Nifty 500 universe so every panel works immediately.
+            In live mode any endpoint that fails falls back to demo silently.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div id="modal-settings" class="modal">
+  <div class="modal-box">
+    <div class="modal-h">Settings <button class="modal-x" data-close>✕</button></div>
+    <div class="grid-2">
+      <label class="fld">EMA periods (comma)<input id="set-emas" class="input" /></label>
+      <label class="fld">RSI period<input id="set-rsi" class="input" type="number" /></label>
+      <label class="fld">Volume spike ratio (× of 9D avg)<input id="set-volspike" class="input" type="number" step="0.1" /></label>
+      <label class="fld">RSI oversold threshold<input id="set-oversold" class="input" type="number" /></label>
+      <label class="fld">Base depth % (max)<input id="set-basedepth" class="input" type="number" /></label>
+      <label class="fld">Breakout volume ×<input id="set-bovol" class="input" type="number" step="0.1" /></label>
+      <label class="fld">Breakout within % of 52W high<input id="set-bohigh" class="input" type="number" /></label>
+      <label class="fld">Pullback EMA guard (price above)<select id="set-pbema" class="input"><option>50</option><option>20</option><option>200</option></select></label>
+    </div>
+    <div class="modal-h" style="margin-top:14px">Watchlists</div>
+    <div id="wl-editor" class="wl-editor"></div>
+    <div class="row" style="margin-top:12px"><button class="btn primary" id="set-save">Save settings</button></div>
+  </div>
+</div>
+
+<div id="modal-stock" class="modal">
+  <div class="modal-box wide">
+    <div class="modal-h"><span id="ms-title">Stock</span><button class="modal-x" data-close>✕</button></div>
+    <div id="ms-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+<script src="live.js"></script>
+</body>
+</html>
