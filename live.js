@@ -140,6 +140,32 @@ const LiveEngine = {
     if(candles.length) this.cacheSet(ck, candles);
     return candles;
   },
+  /* Dhan scrip master → symbol→securityId (proxy parses the ~50MB CSV server-side into compact JSON) */
+  async dhanScripMap(){
+    const ck="sm", hit=this.cacheGet(ck); if(hit) return hit;
+    let txt=null;
+    if(SET.dhan.proxy){
+      try{ const r=await fetch(proxyUrl(SET.dhan.proxy,"https://images.dhan.co/api_data/api-scrip-master.csv")); if(r.ok) txt=await r.text(); }catch(e){ console.warn("scrip via proxy failed:",e.message); }
+    }
+    if(!txt){ try{ const r=await fetch("https://images.dhan.co/api_data/api-scrip-master.csv"); if(r.ok) txt=await r.text(); }catch(e){} }
+    if(!txt) throw new Error("scrip master unreachable");
+    let map=null;
+    if(txt.trim().startsWith("{")){ try{ map=JSON.parse(txt); }catch(e){} }
+    if(!map){
+      const lines=txt.split("\n"), head=lines[0].split(",");
+      const iS=head.indexOf("SEM_TRADING_SYMBOL"), iI=head.indexOf("SECURITY_ID"), iG=head.indexOf("SEM_EXM_EXCH_ID"), iN=head.indexOf("SEM_INSTRUMENT_NAME");
+      map={};
+      for(let i=1;i<lines.length;i++){ const c=lines[i].split(","); if(c[iN]==="EQUITY"&&(c[iG]==="NSE"||c[iG]==="BSE")) map[c[iS]]=+c[iI]; }
+    }
+    this.cacheSet(ck,map);
+    return map;
+  },
+  async dhanEquityHistory(sym, days=420){
+    const map=await this.dhanScripMap();
+    const id=map[sym];
+    if(!id) throw new Error("no Dhan securityId for "+sym);
+    return this.dhanCandles(id,"NSE_EQ","EQUITY",days);
+  },
   async dhanOptionChain(){
     const j=await this.dhan("/v2/optionchain?securityId=13&exchangeSegment=NSE_INDEX&instrument=IDX");
     const raw=(j?.data?.oc)||(j?.oc)||(Array.isArray(j?.data)?j.data:[]);
